@@ -36,7 +36,7 @@ func getURLs() {
 func main() {
 	getURLs()
 
-	for range time.Tick(time.Second * 30) {
+	for range time.Tick(time.Minute * 5) {
 		for _, url := range urls {
 			r, err := http.Get(url)
 			if err != nil {
