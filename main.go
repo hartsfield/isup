@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/hartsfield/gmailer"
 )
@@ -35,16 +36,30 @@ func getURLs() {
 func main() {
 	getURLs()
 
-	for _, url := range urls {
-		r, err := http.Get(url)
-		if err != nil {
-			fmt.Println(err)
-		}
+	ticker := time.NewTicker(5 * time.Minute)
+	quit := make(chan struct{})
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				for _, url := range urls {
+					r, err := http.Get(url)
+					if err != nil {
+						fmt.Println(err)
+					}
 
-		if r.StatusCode != 200 {
-			sendMail(url)
+					if r.StatusCode != 200 {
+						sendMail(url)
+					}
+				}
+
+			case <-quit:
+				ticker.Stop()
+				return
+			}
 		}
-	}
+	}()
+
 }
 
 func sendMail(url string) {
